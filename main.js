@@ -944,7 +944,7 @@ document.getElementById('selectButton').addEventListener('click', function () {
         }),
         style: new Style({
           fill: new Fill({
-            color: 'rgba(255, 255, 255, 1)' // Semi-transparent red fill (customize as needed)
+            color: 'rgba(82, 101, 117, 1)' // Semi-transparent red fill (customize as needed)
           })
         })
       });
@@ -1686,8 +1686,19 @@ function generateLegend() {
           const colorBox = document.createElement('div');
           colorBox.style.width = '20px';
           colorBox.style.height = '20px';
-          colorBox.style.backgroundColor = style.getStroke().getColor();
-          colorBox.style.marginRight = '10px';
+          // Check if the stroke color exists, otherwise use fill color
+          const geometry = feature.getGeometry();
+          if (geometry.getType() === 'Point' && style.getImage() instanceof Circle) {
+            const imageStyle = style.getImage();
+            colorBox.style.backgroundColor = imageStyle.getFill().getColor();
+          } else {
+            // Check if the stroke color exists, otherwise use fill color
+            if (style.getStroke()) {
+              colorBox.style.backgroundColor = style.getStroke().getColor();
+            } else if (style.getFill()) {
+              colorBox.style.backgroundColor = style.getFill().getColor();
+            }
+          } colorBox.style.marginRight = '10px';
 
           const label = document.createElement('span');
           label.innerText = layerName;
@@ -1778,6 +1789,9 @@ const exportMap = () => {
     mapCanvas.width = width;
     mapCanvas.height = height;
     const mapContext = mapCanvas.getContext('2d', { willReadFrequently: true });
+    mapContext.fillStyle = '#437572'; // Change 'white' to any color you want
+    mapContext.fillRect(0, 0, width, height);
+
     const canvases = Array.prototype.slice.call(
       document.querySelectorAll('.ol-layer canvas')
     );
@@ -1834,7 +1848,7 @@ const exportMap = () => {
             const legendDataURL = legendCanvas.toDataURL('image/jpeg');
             const legendWidth = width * 0.17;
             const legendHeight = legendCanvas.height * legendWidth / legendCanvas.width;
-            mapContext.drawImage(legendCanvas, width * 0.82, height * .12, legendWidth, legendHeight);
+            mapContext.drawImage(legendCanvas, width * 0.82, height * .14, legendWidth, legendHeight);
 
             // mapContext.drawImage(legendCanvas, width * 0.7, height - legendHeight, legendWidth, legendHeight);
 
@@ -1846,20 +1860,55 @@ const exportMap = () => {
             html2canvas(scaleLineElement).then(scaleLineCanvas => {
               // Ensure the scale line element is not removed before it's fully captured
               const scaleLineDataURL = scaleLineCanvas.toDataURL('image/jpeg');
-              
+
               // Calculate scaling factors maintaining the aspect ratio
               const scaleFactor = width * 1.8 / size[0];
               const scaleLineWidth = scaleLineCanvas.width * scaleFactor;
               const scaleLineHeight = scaleLineCanvas.height * scaleFactor;
-              
+
               // Draw the scale line on the map context, ensuring it fits correctly
-              mapContext.drawImage(scaleLineCanvas, width * 0.82-scaleLineWidth, height * 0.92-scaleLineHeight, scaleLineWidth*0.8, scaleLineHeight*0.8);
-              // Export to PDF
+              mapContext.drawImage(scaleLineCanvas, width * 0.82 - scaleLineWidth, height * 0.92 - scaleLineHeight, scaleLineWidth * 0.8, scaleLineHeight * 0.8);
+
+              // Additional Text Section
+              const additionalTextSection = document.createElement('div');
+              additionalTextSection.innerHTML = `
+                <div style="font-weight:900; padding:0; width: 100px">
+                          <br>
+
+                  <h2 style="font-size:11px">&nbsp;&nbsp;&nbsp;Legend Section</h2>
+                  <br>
+                </div>`;
+              document.body.appendChild(additionalTextSection);
+
+              html2canvas(additionalTextSection).then(additionalTextCanvas => {
+                document.body.removeChild(additionalTextSection);
+                const additionalTextDataURL = additionalTextCanvas.toDataURL('image/jpeg');
+                // Calculate the width and height maintaining the aspect ratio
+                const additionalTextWidth = width * 0.17;
+                const additionalTextHeight = additionalTextCanvas.height * additionalTextWidth / additionalTextCanvas.width;
+
+                mapContext.drawImage(additionalTextCanvas, width * 0.82, 20, additionalTextWidth * 17, additionalTextHeight * 17);
+
+                // mapContext.drawImage(additionalTextCanvas, width * 0.82, 20, width * 0.8, height*0.1 );
+                // mapContext.drawImage(aboutCanvas, 20, 20, width * 0.8, height * 0.1);
+                // width * 0.82, height * .12
+                // Export to PDF
+                const pdf = new jsPDF('landscape', undefined, format);
+                pdf.addImage(mapCanvas.toDataURL('image/jpeg'), 'JPEG', 0, 0, dim[0], dim[1]);
+                pdf.save('map.pdf');
+
+                // Reset map
+                map.setSize(size);
+                map.getView().setResolution(viewResolution);
+                exportButton.disabled = false;
+                document.body.style.cursor = 'auto';
+              });
+            }).catch(error => {
+              console.error('Error capturing scale line:', error);
+              // Continue with PDF export even if scale line capture fails
               const pdf = new jsPDF('landscape', undefined, format);
               pdf.addImage(mapCanvas.toDataURL('image/jpeg'), 'JPEG', 0, 0, dim[0], dim[1]);
               pdf.save('map.pdf');
-
-              // Reset map
               map.setSize(size);
               map.getView().setResolution(viewResolution);
               exportButton.disabled = false;

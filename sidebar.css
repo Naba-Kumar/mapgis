@@ -685,3 +685,7 @@ footer  #lonlat_display{
 #scale-line-control-container{
     padding: 50px;
 }
+
+canvas {
+    border: 3px solid #031716;
+  }
