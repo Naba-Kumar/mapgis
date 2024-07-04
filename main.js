@@ -782,7 +782,7 @@ const scaleLineControl = new ScaleLine({
   target: document.getElementById('scale-line-control'),
   steps: false,
   text: true,
-  minWidth: 170,
+  // minWidth: 170,
   maxWidth: 180
 });
 map.addControl(scaleLineControl);
@@ -1656,14 +1656,13 @@ function generateLegend() {
 
   const legendElement = document.createElement('div');
   legendElement.id = 'legend';
+  legendElement.style.position = 'absolute';
+  legendElement.style.bottom = '100px'; // Adjust as needed
+  legendElement.style.right = '10px'; // Adjust as needed
   legendElement.style.display = 'flex';
   legendElement.style.flexDirection = 'column';
   legendElement.style.backgroundColor = 'white';
   legendElement.style.padding = '10px';
-  // legendElement.style.border = '1px solid black';
-  legendElement.style.position = 'absolute';
-  legendElement.style.bottom = '10px';
-  legendElement.style.left = '10px';
   legendElement.style.zIndex = '1000';
 
   const layers = map.getLayers().getArray();
@@ -1686,19 +1685,20 @@ function generateLegend() {
           const colorBox = document.createElement('div');
           colorBox.style.width = '20px';
           colorBox.style.height = '20px';
+
           // Check if the stroke color exists, otherwise use fill color
           const geometry = feature.getGeometry();
           if (geometry.getType() === 'Point' && style.getImage() instanceof Circle) {
             const imageStyle = style.getImage();
             colorBox.style.backgroundColor = imageStyle.getFill().getColor();
           } else {
-            // Check if the stroke color exists, otherwise use fill color
             if (style.getStroke()) {
               colorBox.style.backgroundColor = style.getStroke().getColor();
             } else if (style.getFill()) {
               colorBox.style.backgroundColor = style.getFill().getColor();
             }
-          } colorBox.style.marginRight = '10px';
+          }
+          colorBox.style.marginRight = '10px';
 
           const label = document.createElement('span');
           label.innerText = layerName;
@@ -1713,6 +1713,9 @@ function generateLegend() {
 
   document.body.appendChild(legendElement);
 }
+
+// Sample code to demonstrate the legend generation
+generateLegend();
 
 
 
@@ -1772,7 +1775,7 @@ const processCanvas = (width, height, canvases, mapContext, callback) => {
   requestAnimationFrame(() => processCanvas(width, height, canvases, mapContext, callback));
 };
 
-const exportMap = () => {
+const exportMap = async() => {
   const format = 'a5';
   const resolution = 300; // Adjust as needed
   const dim = dims[format];
@@ -1783,6 +1786,7 @@ const exportMap = () => {
 
   // Generate the legend before render complete
   generateLegend();
+  
 
   map.once('rendercomplete', function () {
     const mapCanvas = document.createElement('canvas');
@@ -1949,6 +1953,8 @@ const exportMap = () => {
 };
 
 exportButton.addEventListener('click', function () {
+  console.log("hii")
+  generateLegend()
   exportButton.disabled = true;
   document.body.style.cursor = 'progress';
   exportMap();
