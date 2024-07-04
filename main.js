@@ -778,12 +778,12 @@ let projection = new Projection("EPSG:4326"); // Example: WGS 84 geographic proj
 
 
 const scaleLineControl = new ScaleLine({
-  bar:true,
+  bar: true,
   target: document.getElementById('scale-line-control'),
-  steps:false,
-  text:true,
-  minWidth: 370,
-  maxWidth: 380
+  steps: false,
+  text: true,
+  minWidth: 170,
+  maxWidth: 180
 });
 map.addControl(scaleLineControl);
 
@@ -1341,7 +1341,7 @@ function visualizeCSV(data) {
 // Define the toggleLayer function to switch between layers
 
 function toggleLayer(layerName) {
-  if(layerName ==='osm'){
+  if (layerName === 'osm') {
     var layers = map.getLayers().getArray();
     layers.forEach(function (layer) {
       if (layer.get('name') === 'standardLayer' || layer.get('name') === 'sateliteLayer' || layer.get('name') === 'transportLayer' || layer.get('name') === 'labelLayer') {
@@ -1352,7 +1352,7 @@ function toggleLayer(layerName) {
     });
   }
 
-  if(layerName ==='sateliteLayer'){
+  if (layerName === 'sateliteLayer') {
     var layers = map.getLayers().getArray();
     layers.forEach(function (layer) {
       if (layer.get('name') === 'standardLayer' || layer.get('name') === 'osm' || layer.get('name') === 'transportLayer') {
@@ -1363,7 +1363,7 @@ function toggleLayer(layerName) {
     });
   }
 
-  if(layerName ==='standardLayer'){
+  if (layerName === 'standardLayer') {
     var layers = map.getLayers().getArray();
     layers.forEach(function (layer) {
       if (layer.get('name') === 'osm' || layer.get('name') === 'sateliteLayer' || layer.get('name') === 'transportLayer' || layer.get('name') === 'labelLayer') {
@@ -1374,7 +1374,7 @@ function toggleLayer(layerName) {
     });
   }
 
-  if(layerName ==='transportLayer'){
+  if (layerName === 'transportLayer') {
     var layers = map.getLayers().getArray();
     layers.forEach(function (layer) {
       if (layer.get('name') === 'osm' || layer.get('name') === 'standardLayer' || layer.get('name') === 'sateliteLayer' || layer.get('name') === 'labelLayer') {
@@ -1711,8 +1711,8 @@ function generateLegend() {
 const printFormat = new WKT();
 const printFeature = printFormat.readFeature(
   'POLYGON((10.689697265625 -25.0927734375, 34.595947265625 ' +
-    '-20.1708984375, 38.814697265625 -35.6396484375, 13.502197265625 ' +
-    '-39.1552734375, 10.689697265625 -25.0927734375))'
+  '-20.1708984375, 38.814697265625 -35.6396484375, 13.502197265625 ' +
+  '-39.1552734375, 10.689697265625 -25.0927734375))'
 );
 printFeature.getGeometry().transform('EPSG:4326', 'EPSG:3857');
 
@@ -1755,7 +1755,7 @@ const processCanvas = (width, height, canvases, mapContext, callback) => {
     console.log("width")
     console.log(width)
 
-    mapContext.drawImage(canvas,20, height*.11 , width*.8, height*.8);
+    mapContext.drawImage(canvas, 20, height * .11, width * .8, height * .8);
   }
 
   requestAnimationFrame(() => processCanvas(width, height, canvases, mapContext, callback));
@@ -1812,14 +1812,14 @@ const exportMap = () => {
         const aboutWidth = width * 0.3;
         const aboutHeight = aboutWidth;
         console.log("height")
-    console.log(height)
-    console.log("width")
-    console.log(width)
+        console.log(height)
+        console.log("width")
+        console.log(width)
 
-        mapContext.drawImage(aboutCanvas, 20, 20, width*0.8, height*0.1);
+        mapContext.drawImage(aboutCanvas, 20, 20, width * 0.8, height * 0.1);
 
 
-   
+
 
         // Legend
         const legendElement = document.getElementById('legend');
@@ -1834,7 +1834,7 @@ const exportMap = () => {
             const legendDataURL = legendCanvas.toDataURL('image/jpeg');
             const legendWidth = width * 0.17;
             const legendHeight = legendCanvas.height * legendWidth / legendCanvas.width;
-            mapContext.drawImage(legendCanvas, width * 0.82, height*.12, legendWidth, legendHeight);
+            mapContext.drawImage(legendCanvas, width * 0.82, height * .12, legendWidth, legendHeight);
 
             // mapContext.drawImage(legendCanvas, width * 0.7, height - legendHeight, legendWidth, legendHeight);
 
@@ -1844,12 +1844,16 @@ const exportMap = () => {
             const scaleLineElement = document.getElementById('scale-line-control');
 
             html2canvas(scaleLineElement).then(scaleLineCanvas => {
-              document.body.removeChild(scaleLineElement);
+              // Ensure the scale line element is not removed before it's fully captured
               const scaleLineDataURL = scaleLineCanvas.toDataURL('image/jpeg');
-              const scaleLineWidth = scaleLineCanvas.width * (width * 1.8 / size[0]);
-              const scaleLineHeight = scaleLineCanvas.height * (width * 1.8 / size[0]);
-              mapContext.drawImage(scaleLineCanvas, width*0.1, height*0.9, scaleLineWidth*1.5, scaleLineHeight);
-
+              
+              // Calculate scaling factors maintaining the aspect ratio
+              const scaleFactor = width * 1.8 / size[0];
+              const scaleLineWidth = scaleLineCanvas.width * scaleFactor;
+              const scaleLineHeight = scaleLineCanvas.height * scaleFactor;
+              
+              // Draw the scale line on the map context, ensuring it fits correctly
+              mapContext.drawImage(scaleLineCanvas, width * 0.82-scaleLineWidth, height * 0.92-scaleLineHeight, scaleLineWidth*0.8, scaleLineHeight*0.8);
               // Export to PDF
               const pdf = new jsPDF('landscape', undefined, format);
               pdf.addImage(mapCanvas.toDataURL('image/jpeg'), 'JPEG', 0, 0, dim[0], dim[1]);
@@ -1919,17 +1923,17 @@ import DragBox from 'ol/interaction/DragBox.js';
 const zoomininteraction = new DragBox();
 
 zoomininteraction.on('boxend', function () {
-    // Get the extent of the drawn box
-    const zoominExtent = zoomininteraction.getGeometry().getExtent();
-    map.getView().fit(zoominExtent);
+  // Get the extent of the drawn box
+  const zoominExtent = zoomininteraction.getGeometry().getExtent();
+  map.getView().fit(zoominExtent);
 });
 
 const mapElement = document.getElementById("map");
 
 
 function resetCursor() {
-    mapElement.style.cursor = "auto"; // Reset cursor to normal
-    map.removeInteraction(zoomininteraction);
+  mapElement.style.cursor = "auto"; // Reset cursor to normal
+  map.removeInteraction(zoomininteraction);
 }
 
 // // Add event listener for "zoomend" event
@@ -1940,8 +1944,8 @@ map.on('moveend', resetCursor);
 const ziButton = document.getElementById('dragSelect')
 // Button click event listener for activating/deactivating drag zoom interaction
 ziButton.addEventListener('click', () => {
-    mapElement.style.cursor = "zoom-in";
-    map.addInteraction(zoomininteraction);
+  mapElement.style.cursor = "zoom-in";
+  map.addInteraction(zoomininteraction);
 })
 
 

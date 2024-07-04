@@ -667,13 +667,21 @@ footer  #lonlat_display{
     font-weight: 900;
 }
 
+#scale-line-control-cont {
+
+    padding: 40px;
+}
+
 .ol-scale-text{
-    font-size: 20px !important;
+    font-size: 16px !important;
     font-weight: 700 !important;
 }
 
 .ol-scale-step-text{
-    font-size: 18px !important;
+    font-size: 13px !important;
     font-weight: bolder !important;
 }
 
+#scale-line-control-container{
+    padding: 50px;
+}
